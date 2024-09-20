@@ -24,6 +24,8 @@ app.get('/tasks', (req, res) => {
 
 
 app.post('/tasks', (req, res) => {
+  const task = { id: taskId++, name: req.body.name }; 
+  tasks.push(task); 
   res.json(task); 
 });
 
@@ -33,6 +35,7 @@ app.put('/tasks/:id', (req, res) => {
   const task = tasks.find(t => t.id === id); 
 
   if (task) {
+    task.name = req.body.name; 
     res.json(task); 
   } else {
     res.status(404).send('Task not found'); 
