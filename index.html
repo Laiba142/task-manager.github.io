@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager App</title>
+  <style>
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #48c8e8;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-image: url('https://source.unsplash.com/1600x900/?workspace,professional'); /* Add professional background image */
+      background-size: cover;
+      background-position: center;
+    }
+
+   
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(107, 170, 237, 0.7); 
+    }
+
+    
+    .container {
+      background-color: #333; /* Dark grey background */
+      max-width: 600px;
+      width: 100%;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+      transition: transform 0.3s ease-in-out;
+      position: relative;
+    }
+
+    .container:hover {
+      transform: scale(1.05);
+    }
+
+    h1 {
+      text-align: center;
+      color: #ecf0f1;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      animation: fadeInDown 1s ease-in-out;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    
+    form {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 75%;
+      padding: 15px;
+      font-size: 1.2rem;
+      border: 2px solid #444;
+      border-radius: 8px;
+      outline: none;
+      background-color: #555;
+      color: #fff;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: #16a085;
+    }
+
+    button {
+      padding: 15px;
+      background-color: #16a085;
+      color: white;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1abc9c;
+    }
+
+    button:disabled {
+      background-color: #7f8c8d;
+      cursor: not-allowed;
+    }
+
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #444;
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, background-color 0.3s ease;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    li:hover {
+      background-color: #555;
+      transform: translateY(-5px);
+    }
+
+    li span {
+      flex-grow: 1;
+      font-size: 1.2rem;
+      color: #ecf0f1;
+    }
+
+    li button {
+      margin-left: 10px;
+      padding: 10px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    li button:hover {
+      background-color: #c0392b;
+    }
+
+   
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #bdc3c7;
+    }
+
+    
+    @keyframes fadeInDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+ 
+  <div class="overlay"></div>
+
+  
+  <div class="container">
+    <h1>Task Manager</h1>
+    <form id="taskForm">
+      <input type="text" id="taskInput" placeholder="Enter task name" required>
+      <button type="submit">Add Task</button>
+    </form>
+    <ul id="taskList"></ul>
+
+    
+    <div class="footer">
+      <p>Task Manager App - Powered by Node.js & Express</p>
+    </div>
+  </div>
+
+  <script>
+    const taskForm = document.getElementById('taskForm');
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+
+    
+    async function fetchTasks() {
+      const response = await fetch('http://localhost:3000/tasks');
+      const tasks = await response.json();
+      taskList.innerHTML = '';
+      tasks.forEach(task => createTaskElement(task));
+    }
+
+    
+    function createTaskElement(task) {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span>${task.name}</span>
+        <button onclick="editTask(${task.id}, '${task.name}')">Edit</button>
+        <button onclick="deleteTask(${task.id})">Delete</button>
+      `;
+      taskList.appendChild(li);
+    }
+
+    
+    taskForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const task = { name: taskInput.value };
+      const response = await fetch('http://localhost:3000/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(task),
+      });
+      const newTask = await response.json();
+      createTaskElement(newTask);
+      taskInput.value = '';
+    });
+
+    
+    async function editTask(id, name) {
+      const newName = prompt('Edit task:', name);
+      if (newName) {
+        await fetch(`http://localhost:3000/tasks/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newName }),
+        });
+        fetchTasks();
+      }
+    }
+
+    
+    async function deleteTask(id) {
+      await fetch(`http://localhost:3000/tasks/${id}`, { method: 'DELETE' });
+      fetchTasks();
+    }
+
+    
+    fetchTasks();
+  </script>
+</body>
+</html>
